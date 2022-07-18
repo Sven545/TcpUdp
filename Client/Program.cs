@@ -41,42 +41,49 @@ namespace Client
                     tcpSocket = new TcpSocket(ipAddress, _tcpPort);
                    // tcpSocket.StartRecieveAsync();
                     tcpSocket.SendMessage(Encoding.Unicode.GetBytes(udpDataForServer));
-                    tcpSocket.PackageIsRecieved += TcpSocket_PackageIsRecieved;
-                    
-                    /*
-                    IPEndPoint ipPoint = new IPEndPoint(ipAddress, tcpPort);
-
-                    Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    // подключаемся к удаленному хосту
-                    socket.Connect(ipPoint);
-                    // Console.Write(udpDataForServer);
-                    //string message = Console.ReadLine();
-                    byte[] data = Encoding.Unicode.GetBytes(udpDataForServer);
-                    // Console.WriteLine(GetUdpPackages(300,data).Count);
-                    socket.Send(data);
-                    */
-                    /*
-                    UdpSocket udpSocket = new UdpSocket(ipAddress, udpPort);
-                    foreach(var package in GetUdpPackages(256,fileBytes))
+                    string tcpResponce = tcpSocket.ReadMessage();
+                    Console.WriteLine(tcpResponce);
+                    if (tcpResponce == "Udp data recieved")
                     {
-                        udpSocket.SendMessage(package.Data);
-
-                        // получаем ответ
-                        data = new byte[256]; // буфер для ответа
-                        StringBuilder builder = new StringBuilder();
-                        int bytes = 0; // количество полученных байт
-                        Thread.Sleep(timeOutUdpResponse);
-                      
-                        while (socket.Available > 0)
-                        {
-                            bytes = socket.Receive(data, data.Length, 0);
-                            builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
-                        }
-                        Console.WriteLine("ответ сервера: " + builder.ToString());
+                        udpSocket = new UdpSocket(ipAddress, udpPort);
+                        SendPackages(GetUdpPackages(512, fileBytes));
                     }
-                    */
-                   
-                }
+                        // tcpSocket.PackageIsRecieved += TcpSocket_PackageIsRecieved;
+
+                        /*
+                        IPEndPoint ipPoint = new IPEndPoint(ipAddress, tcpPort);
+
+                        Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        // подключаемся к удаленному хосту
+                        socket.Connect(ipPoint);
+                        // Console.Write(udpDataForServer);
+                        //string message = Console.ReadLine();
+                        byte[] data = Encoding.Unicode.GetBytes(udpDataForServer);
+                        // Console.WriteLine(GetUdpPackages(300,data).Count);
+                        socket.Send(data);
+                        */
+                        /*
+                        UdpSocket udpSocket = new UdpSocket(ipAddress, udpPort);
+                        foreach(var package in GetUdpPackages(256,fileBytes))
+                        {
+                            udpSocket.SendMessage(package.Data);
+
+                            // получаем ответ
+                            data = new byte[256]; // буфер для ответа
+                            StringBuilder builder = new StringBuilder();
+                            int bytes = 0; // количество полученных байт
+                            Thread.Sleep(timeOutUdpResponse);
+
+                            while (socket.Available > 0)
+                            {
+                                bytes = socket.Receive(data, data.Length, 0);
+                                builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+                            }
+                            Console.WriteLine("ответ сервера: " + builder.ToString());
+                        }
+                        */
+
+                    }
                 
                
 
@@ -100,7 +107,7 @@ namespace Client
             if(serverData== "Udp data recieved")
             {
                  udpSocket = new UdpSocket(ipAddress, udpPort);
-                SendPackages(GetUdpPackages(256, fileBytes));
+                SendPackages(GetUdpPackages(512, fileBytes));
                 /*
                 foreach (var package in GetUdpPackages(256, fileBytes))
                 {
@@ -132,9 +139,11 @@ namespace Client
                 _udpPackageIsTransferred = false;
                 udpSocket.SendMessage(packages[currentPackageNumber-1].Data);
                 Thread.Sleep(timeOutUdpResponse);
-                if(_udpPackageIsTransferred)
+                string tcpResponce = tcpSocket.ReadMessage();
+                if (tcpResponce== "Response")
                 {
                     currentPackageNumber++;
+                    Console.WriteLine(currentPackageNumber-1+" "+tcpResponce);
                 }
             }
             tcpSocket.SendMessage(Encoding.Unicode.GetBytes("End"));
@@ -147,11 +156,12 @@ namespace Client
                 int countPackages = fileBytes.Length / bytesPerPackage;
                 List<UdpDatagramm> packages = new List<UdpDatagramm>();
                 int packageNumber = 1;
-                byte[] packageBytes = new byte[bytesPerPackage];
+                byte[] packageBytes = new byte[bytesPerPackage+1];
                 int currentByteNum = 0;
                 while(currentByteNum<fileBytes.Length-bytesPerPackage)
                 {
-                    Array.Copy(fileBytes, currentByteNum, packageBytes, 0, bytesPerPackage);
+                    packageBytes[0] = Convert.ToByte(packageNumber);
+                    Array.Copy(fileBytes, currentByteNum, packageBytes, 1, bytesPerPackage);
                     packages.Add(new UdpDatagramm(packageNumber, packageBytes));
                     packageNumber++;
                     currentByteNum = currentByteNum + bytesPerPackage;

@@ -15,7 +15,8 @@ namespace Server
         Socket _socket;
         Socket _handler;
         private int _port;
-        private bool _isRecieve;
+        private bool _isRecieveNewConnection;
+        private bool _isRecieveNewData;
 
         public event EventHandler<byte[]> PackageIsRecieved;
         public TcpSocket(IPAddress ipAddress, int port)
@@ -32,8 +33,9 @@ namespace Server
                 _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 // связываем сокет с локальной точкой, по которой будем принимать данные
                 _socket.Bind(_ipPoint);
+                Console.WriteLine("Tcp сокет создан");
             }
-            catch (Exception ex )
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -46,11 +48,11 @@ namespace Server
             {
                 _handler.Send(sendBytes);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            
+
         }
         public async Task StartRecieveAsync()
         {
@@ -63,28 +65,41 @@ namespace Server
 
                 // начинаем прослушивание
                 _socket.Listen();
-                _isRecieve = true;
-                while (_isRecieve)
+                _isRecieveNewConnection = true;
+                Console.WriteLine("Ожидание подключения...");
+                while (_isRecieveNewConnection)
                 {
                     _handler = _socket.Accept();
+                    Console.WriteLine("Клиент подключился");
                     // получаем сообщение
                     StringBuilder builder = new StringBuilder();
                     int bytes = 0; // количество полученных байтов
-                    byte[] data = new byte[256]; // буфер для получаемых данных
+                    byte[] data; // буфер для получаемых данных
 
-                    if (_handler.Available > 0)
+
+                    Console.WriteLine("Сообщение по Tcp получено");
+                    _isRecieveNewData = true;
+                    while (_isRecieveNewData)
                     {
-                       
-                        while (_handler.Available > 0)
+                        if (_handler.Available > 0)
                         {
-                            bytes = _handler.Receive(data);
-                            OnPackageIsRecieved(data);
+                            data = new byte[_handler.Available];
+                            do
+                            {
+                                bytes = _handler.Receive(data);
+                                OnPackageIsRecieved(data);
+                            }
+                            while (_handler.Available > 0);
                         }
-
+                        
                     }
 
 
-                   
+
+
+
+
+
 
                     //Начинаем прием udp пакетов
                     // закрываем сокет
@@ -97,11 +112,15 @@ namespace Server
                 Console.WriteLine(ex.Message);
             }
         }
-        public void StopRecieve()
+        public void StopRecieveConnections()
         {
-            _isRecieve = false;
+            _isRecieveNewConnection = false;
         }
-       
+        public void StopRecieveData()
+        {
+            _isRecieveNewData = false;
+        }
+
         public void OnPackageIsRecieved(byte[] recievedBytes)
         {
             if (PackageIsRecieved != null)

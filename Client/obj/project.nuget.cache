@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "+ATxcDdchM8jNAjR9mTAgD3itU/sLemqd7Vt/A2+kag5JAo44VefZOev33G+WQn9WLRg4TwTPwSRdAOqU5q8FA==",
+  "dgSpecHash": "56zqHQgezLLyaSPa+KBVnnUGBp1ARIOHPrwTc+CLcqYcSSVsvtEJC74hwnd86H7BatXWipk0kZCxMFvCzrdpvw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Александр\\Desktop\\Projects\\UdpSocket\\Client\\Client.csproj",
+  "projectFilePath": "C:\\Users\\User\\Desktop\\Projects\\TcpUdp\\Client\\Client.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

@@ -22,9 +22,9 @@ namespace Server
             fileDirectory = Environment.CurrentDirectory;
 
             tcpSocket = new TcpSocket(ipAddress, _tcpPort);
-            
-            tcpSocket.StartRecieveAsync();
             tcpSocket.PackageIsRecieved += TcpSocket_PackageIsRecieved;
+            tcpSocket.StartRecieveAsync();
+            
 
            
             Console.ReadLine();
@@ -86,7 +86,7 @@ namespace Server
             string clientData = Encoding.Unicode.GetString(e, 0, e.Length);
             Console.WriteLine(clientData);
             var clientDataArray = clientData.Split(' ');
-            if(clientData.Length==2)
+            if(clientDataArray.Length==2)
             {
                 _fileName = clientDataArray[0];
                 //_udpPort = int.Parse(udpDataArray[1]);
@@ -95,14 +95,14 @@ namespace Server
                     tcpSocket.SendMessage(Encoding.Unicode.GetBytes("Udp data recieved"));
                     UdpSocket udpSocket = new UdpSocket(_udpPort);
                     udpSocket.PackageIsRecieved += UdpSocket_PackageIsRecieved;
-                    udpSocket.StartRecieve();
+                    udpSocket.StartRecieveAsync();
                 }
             }
             else
             {
                 if(clientData == "End")
                 {
-                    //Логика записи в файл
+                    Console.WriteLine("File End");
                 }
             }
            

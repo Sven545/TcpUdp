@@ -30,10 +30,12 @@ namespace Client
 
                 // создаем сокет
                 _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                Console.WriteLine("Tcp сокет создан");
                 // связываем сокет с локальной точкой, по которой будем принимать данные
                 _socket.Connect(_ipPoint);
+                Console.WriteLine($"Tcp подключение создано - {ipAddress}:{port} ");
             }
-            catch (Exception ex )
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -45,12 +47,34 @@ namespace Client
             try
             {
                 _socket.Send(sendBytes);
+                Console.WriteLine("Сообщение отправлено по TCP: " + Encoding.Unicode.GetString(sendBytes, 0, sendBytes.Length));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            
+
+        }
+        public string ReadMessage()
+        {
+            // получаем ответ
+            byte[] data = new byte[256]; // буфер для ответа
+            StringBuilder builder = new StringBuilder();
+            int bytes = 0; // количество полученных байт
+            //if (_socket.Available > 0)
+            //{
+                do
+                {
+                
+                    bytes = _socket.Receive(data, data.Length, 0);
+               
+                    
+                    builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+                }
+                while (_socket.Available > 0);
+           // }
+            Console.WriteLine("Сообщение из Tcp сокета: " + builder.ToString());
+            return builder.ToString();
         }
         public async Task StartRecieveAsync()
         {
@@ -62,7 +86,7 @@ namespace Client
             {
 
                 // начинаем прослушивание
-               // _socket.Listen();
+                // _socket.Listen();
                 _isRecieve = true;
                 while (_isRecieve)
                 {
@@ -74,7 +98,7 @@ namespace Client
 
                     if (_handler.Available > 0)
                     {
-                       
+
                         while (_handler.Available > 0)
                         {
                             bytes = _handler.Receive(data);
@@ -84,7 +108,7 @@ namespace Client
                     }
 
 
-                   
+
 
                     //Начинаем прием udp пакетов
                     // закрываем сокет
@@ -101,7 +125,7 @@ namespace Client
         {
             _isRecieve = false;
         }
-       
+
         public void OnPackageIsRecieved(byte[] recievedBytes)
         {
             if (PackageIsRecieved != null)

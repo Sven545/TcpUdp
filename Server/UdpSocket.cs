@@ -22,7 +22,10 @@ namespace Server
             _port = port;
            
         }
-       
+       public async Task StartRecieveAsync()
+        {
+            await Task.Run(() => StartRecieve());
+        }
         public void StartRecieve()
         {
 
